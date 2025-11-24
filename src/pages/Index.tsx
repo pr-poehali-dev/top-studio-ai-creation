@@ -3,19 +3,46 @@ import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const [isYearly, setIsYearly] = useState(false);
+  const [statsVisible, setStatsVisible] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setScrollY(currentScrollY);
+      
+      const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (currentScrollY / windowHeight) * 100;
+      setScrollProgress(scrolled);
+      
+      setShowScrollTop(currentScrollY > 500);
+      
+      if (currentScrollY > 600 && !statsVisible) {
+        setStatsVisible(true);
+      }
+    };
+    
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [statsVisible]);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const scrollToSection = (sectionId: string) => {
     setActiveSection(sectionId);
@@ -107,8 +134,68 @@ const Index = () => {
     }
   ];
 
+  const testimonials = [
+    {
+      name: "Анна Смирнова",
+      role: "Creative Director, MediaPro",
+      avatar: "AS",
+      text: "TOP STUDIO перевернул наш подход к контенту. То, на что раньше уходили недели, теперь делается за часы. Качество генерации просто впечатляет!",
+      rating: 5
+    },
+    {
+      name: "Михаил Петров",
+      role: "CEO, StartupHub",
+      avatar: "МП",
+      text: "AI-ассистенты освободили команду от рутины. Экономим 30+ часов в неделю. Это не просто инструмент, это настоящий прорыв!",
+      rating: 5
+    },
+    {
+      name: "Елена Волкова",
+      role: "Marketing Lead, TechCorp",
+      avatar: "ЕВ",
+      text: "Генерация визуалов стала безумно простой. Клиенты в восторге от скорости и качества. Обязательно рекомендую!",
+      rating: 5
+    }
+  ];
+
+  const partners = [
+    "OpenAI", "Google Cloud", "Microsoft Azure", "AWS", "Nvidia", "Meta"
+  ];
+
+  const faqs = [
+    {
+      question: "Как работает генерация через ИИ?",
+      answer: "Наши нейросети обучены на миллионах примеров. Вы просто описываете, что хотите получить, а ИИ создаёт контент за секунды. Технология использует передовые модели от OpenAI, Stable Diffusion и собственные разработки."
+    },
+    {
+      question: "Можно ли использовать контент коммерчески?",
+      answer: "Да! Все тарифы включают коммерческую лицензию. Вы владеете правами на созданный контент и можете использовать его без ограничений в своих проектах."
+    },
+    {
+      question: "Какие форматы поддерживаются?",
+      answer: "Видео: MP4, WebM, MOV до 8K. Изображения: PNG, JPG, WebP, SVG. Ассистенты работают с текстом, документами PDF, таблицами Excel и более 50 форматами файлов."
+    },
+    {
+      question: "Есть ли API для интеграции?",
+      answer: "Да! Планы Pro и Enterprise включают полный доступ к REST API. Документация, SDK для Python/JavaScript/TypeScript, webhooks и техническая поддержка интеграции."
+    },
+    {
+      question: "Как быстро генерируется контент?",
+      answer: "Изображения: 3-10 секунд. Видео до 30 сек: 1-2 минуты. Видео до 5 минут: 5-15 минут. AI-ассистенты отвечают мгновенно. Скорость зависит от сложности запроса и вашего тарифа."
+    },
+    {
+      question: "Можно ли отменить подписку?",
+      answer: "Конечно! Отмена в любой момент без объяснений. Доступ сохраняется до конца оплаченного периода. Возврат средств возможен в течение 14 дней после покупки."
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <div 
+        className="fixed top-0 left-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary z-[60] transition-all duration-300"
+        style={{ width: `${scrollProgress}%` }}
+      />
+      
       <nav className="fixed top-0 w-full bg-background/80 backdrop-blur-lg border-b border-border z-50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -199,7 +286,7 @@ const Index = () => {
             </div>
             
             <h1 className="font-heading text-5xl md:text-7xl font-bold leading-tight">
-              Создавайте с <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">искусственным интеллектом</span>
+              Создавайте с <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent animate-pulse">искусственным интеллектом</span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -252,19 +339,19 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20">
-            <div className="text-center">
+            <div className={`text-center transition-all duration-700 ${statsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="text-4xl font-bold text-primary mb-2">10K+</div>
               <div className="text-sm text-muted-foreground">Пользователей</div>
             </div>
-            <div className="text-center">
+            <div className={`text-center transition-all duration-700 delay-100 ${statsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="text-4xl font-bold text-primary mb-2">1M+</div>
               <div className="text-sm text-muted-foreground">Генераций</div>
             </div>
-            <div className="text-center">
+            <div className={`text-center transition-all duration-700 delay-200 ${statsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="text-4xl font-bold text-primary mb-2">99.9%</div>
               <div className="text-sm text-muted-foreground">Uptime</div>
             </div>
-            <div className="text-center">
+            <div className={`text-center transition-all duration-700 delay-300 ${statsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="text-4xl font-bold text-primary mb-2">24/7</div>
               <div className="text-sm text-muted-foreground">Поддержка</div>
             </div>
@@ -417,6 +504,158 @@ const Index = () => {
         </div>
       </section>
 
+      <section id="testimonials" className="py-20 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
+              Что говорят наши клиенты
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Более 10 000 довольных пользователей по всему миру
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <Card 
+                key={index}
+                className="p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 animate-fade-in relative overflow-hidden group"
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
+                      {testimonial.avatar}
+                    </div>
+                    <div>
+                      <div className="font-semibold">{testimonial.name}</div>
+                      <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Icon key={i} name="Star" size={16} className="text-yellow-500 fill-yellow-500" />
+                    ))}
+                  </div>
+
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    "{testimonial.text}"
+                  </p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 px-6 bg-muted/30">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-12">
+            <h3 className="font-heading text-2xl md:text-3xl font-bold mb-2">
+              Нам доверяют лидеры индустрии
+            </h3>
+            <p className="text-muted-foreground">Работаем на базе лучших технологий</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
+            {partners.map((partner, index) => (
+              <div 
+                key={index}
+                className="flex items-center justify-center p-6 rounded-lg bg-background/50 backdrop-blur hover:bg-background transition-all duration-300 hover:scale-105 animate-fade-in"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="text-xl font-bold text-muted-foreground/60 hover:text-foreground transition-colors">
+                  {partner}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
+              Примеры работ
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Посмотрите, что создают наши пользователи
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature, index) => (
+              <div 
+                key={index}
+                className="group relative overflow-hidden rounded-2xl aspect-video cursor-pointer animate-scale-in"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <img 
+                  src={feature.image} 
+                  alt={feature.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon name={feature.icon} size={20} className="text-white" />
+                      <h3 className="font-heading text-lg font-bold text-white">{feature.title}</h3>
+                    </div>
+                    <p className="text-sm text-white/80">{feature.description}</p>
+                    <Button size="sm" className="mt-4" onClick={handleDemo}>
+                      <Icon name="Play" size={16} className="mr-2" />
+                      Смотреть
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" className="py-20 px-6 bg-muted/30">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-16">
+            <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">
+              Частые вопросы
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Всё, что нужно знать о TOP STUDIO
+            </p>
+          </div>
+
+          <Accordion type="single" collapsible className="space-y-4">
+            {faqs.map((faq, index) => (
+              <AccordionItem 
+                key={index} 
+                value={`item-${index}`}
+                className="bg-background rounded-lg px-6 border-2 hover:border-primary/50 transition-colors"
+              >
+                <AccordionTrigger className="text-left font-semibold hover:text-primary">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+
+          <div className="mt-12 text-center">
+            <p className="text-muted-foreground mb-4">Не нашли ответ на свой вопрос?</p>
+            <Button onClick={handleContact} size="lg">
+              <Icon name="MessageCircle" size={20} className="mr-2" />
+              Написать в поддержку
+            </Button>
+          </div>
+        </div>
+      </section>
+
       <section id="contact" className="py-20 px-6">
         <div className="container mx-auto max-w-4xl">
           <Card className="p-12 text-center bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/10 border-2">
@@ -471,13 +710,23 @@ const Index = () => {
             </p>
 
             <div className="flex gap-6">
-              <a href="#" className="text-sm hover:text-primary transition-colors">Условия</a>
-              <a href="#" className="text-sm hover:text-primary transition-colors">Конфиденциальность</a>
-              <a href="#" className="text-sm hover:text-primary transition-colors">Поддержка</a>
+              <button onClick={handleContact} className="text-sm hover:text-primary transition-colors">Условия</button>
+              <button onClick={handleContact} className="text-sm hover:text-primary transition-colors">Конфиденциальность</button>
+              <button onClick={handleContact} className="text-sm hover:text-primary transition-colors">Поддержка</button>
             </div>
           </div>
         </div>
       </footer>
+
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 p-4 bg-primary text-primary-foreground rounded-full shadow-2xl hover:scale-110 transition-all duration-300 z-50 animate-fade-in group"
+          aria-label="Наверх"
+        >
+          <Icon name="ArrowUp" size={24} className="group-hover:-translate-y-1 transition-transform" />
+        </button>
+      )}
     </div>
   );
 };
